@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Wyze Cam Pan <%if (user && canControl) { %>Controller<% }else{ %>Viewer<% } %></title>
+	<link rel="apple-touch-icon" sizes="57x57" href="./img/favicons/apple-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="./img/favicons/apple-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="./img/favicons/apple-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="./img/favicons/apple-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="./img/favicons/apple-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="./img/favicons/apple-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="./img/favicons/apple-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="./img/favicons/apple-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="./img/favicons/apple-icon-180x180.png">
+	<link rel="icon" type="image/png" sizes="192x192"  href="./img/favicons/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="./img/favicons/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="./img/favicons/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="./img/favicons/favicon-16x16.png">
+	<link rel="manifest" href="./img/favicons/manifest.json">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-TileImage" content="./img/favicons/ms-icon-144x144.png">
+	<meta name="theme-color" content="#ffffff">
+	<style type="text/css">
+		html, body {
+			background-color: #111;
+			text-align: center;
+			overflow: hidden;
+			margin: 0;
+		}
+		img {
+			z-index: 999 !important;
+			cursor: pointer;
+		}
+		.minor-image {
+			width: 5vw;
+		}
+		.major-image {
+			width: 10vw;
+		}
+		.shadowed {
+			-webkit-filter: drop-shadow(0px 0px 10px #FFFFFF);
+  			filter: drop-shadow(0px 0px 10px #FFFFFF);
+			opacity: 50%;
+		}
+		.login-or-out-button {
+			position: absolute !important;
+			top: 0;
+			right: 0;
+			z-index: 999 !important;
+		}
+		.up-button {
+			text-align: center;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+		}
+		.down-button {
+			text-align: center;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+		}
+		.left-button {
+			position: absolute;
+			left: 0;
+			top: 0;
+			height: 100%;
+		}
+		.left-button > img {
+			position: absolute;
+			bottom: 0;
+			top: 0;
+			left: 0;
+			margin: auto;
+		}
+		.right-button {
+			position: absolute;
+			right: 0;
+			top: 0;
+			height: 100%;
+		}
+		.right-button > img {
+			position: absolute;
+			bottom: 0;
+			top: 0;
+			right: 0;
+			margin: auto;
+		}
+		.utilities-buttons {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+		}
+	</style>
+	<script>
+	function move(direction){
+		var xhttp = new XMLHttpRequest();
+		xhttp.open("GET", `/${direction}`, true);
+		xhttp.send();
+	}
+	function nightmode(onOrOffBoolean){
+		var xhttp = new XMLHttpRequest();
+		xhttp.open("GET", `/nightmode?on=${onOrOffBoolean.toString()}`, true);
+		xhttp.send();
+	}
+	</script>
+</head>
+<body>
+	<canvas id="video-canvas" style="max-width: 100vw; max-height: 100vh;"></canvas>
+	<script type="text/javascript" src="./js/jsmpeg.min.js"></script>
+	<%if (loginEnabled){%>
+	<%if (user) { %>
+	<div class="login-or-out-button"><a href="/logout"><img class="shadowed minor-image" src="./img/logout.png"/></a></div>
+	<% }else{ %>
+	<div class="login-or-out-button"><a href="/login"><img class="shadowed minor-image" src="./img/login.png"/></a></div>
+	<% } %>
+	<% } %>
+	<%if ((user && canControl) || anonymousControl) { %>
+		<div class="up-button">
+			<img onclick="move('up');" class="shadowed major-image" src="./img/up.png" />
+		</div>
+		<div class="down-button">
+			<img onclick="move('down');" class="shadowed major-image" src="./img/down.png" />
+		</div>
+		<div class="left-button">
+			<img onclick="move('left');" class="shadowed major-image" src="./img/left.png" />
+		</div>
+		<div class="right-button">
+			<img onclick="move('right');" class="shadowed major-image" src="./img/right.png" />
+		</div>
+		<div class="utilities-buttons">
+			<img onclick="move('calibrate');" class="shadowed minor-image" src="./img/calibrate.png" />
+			<img onclick="nightmode(true);" class="shadowed minor-image" src="./img/night-on.png" />
+			<img onclick="nightmode(false);" class="shadowed minor-image" src="./img/night-off.png" />
+		</div>
+	<% } %>
+	<script type="text/javascript">
+		var canvas = document.getElementById('video-canvas');
+		var url = 'ws<%if (ssl) { %>s<% } %>://'+document.location.host+'/ws';
+		var player = new JSMpeg.Player(url, {canvas: canvas});
+	</script>
+</body>
+</html>

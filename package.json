@@ -1,0 +1,26 @@
+{
+  "name": "wyze-rtsp-gui",
+  "version": "1.0.0",
+  "description": "A Node.JS project to proxy/stream the RTSP video from Wyze Cam Pan to a browser.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kyle Boyer",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.4",
+    "ejs": "^3.0.1",
+    "express": "^4.17.1",
+    "express-session": "^1.17.0",
+    "get-port": "^5.1.0",
+    "http": "0.0.0",
+    "https": "^1.0.0",
+    "memorystore": "^1.6.1",
+    "net": "^1.0.2",
+    "node-rtsp-stream": "git+https://github.com/KyleBoyer/node-rtsp-stream.git",
+    "request": "^2.88.0"
+  }
+}
