@@ -35,11 +35,11 @@
 		}
 
 		.minor-image {
-			width: 5vw;
+			width: 7.5vmax;
 		}
 
 		.major-image {
-			width: 10vw;
+			width: 15vmax;
 		}
 
 		.shadowed {
@@ -105,6 +105,8 @@
 			position: absolute;
 			bottom: 0;
 			left: 0;
+			width: 100%;
+			text-align: left;
 		}
 	</style>
 	<script>
@@ -149,8 +151,8 @@
 	</div>
 	<div class="utilities-buttons">
 		<img onclick="move('calibrate');" class="shadowed minor-image" src="./img/calibrate.png" />
-		<img onclick="nightmode(true);" class="shadowed minor-image" src="./img/night-on.png" />
-		<img onclick="nightmode(false);" class="shadowed minor-image" src="./img/night-off.png" />
+		<img onclick="nightmode(false);" class="shadowed minor-image" style="float:right; margin-left: 3vmin;" src="./img/night-off.png" />
+		<img onclick="nightmode(true);" class="shadowed minor-image" style="float:right;" src="./img/night-on.png" />
 	</div>
 	<% } %>
 	<script type="text/javascript">
