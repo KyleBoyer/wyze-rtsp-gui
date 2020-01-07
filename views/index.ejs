@@ -160,7 +160,11 @@
 			canvas: canvas
 		});
 		document.body.addEventListener('touchstart', function () {
-			player.audioOut.unlock();
+			if(player.audioOut.unlocked){
+				player.audioOut.unlocked = false;
+			}else{
+				player.audioOut.unlock();
+			}
 		});
 	</script>
 </body>
