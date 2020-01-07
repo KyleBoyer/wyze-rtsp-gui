@@ -7,6 +7,7 @@ const config = Object.assign({
   cameraIPorHost: 'DAFANG',
   cameraPort: 8554,
   serverPort: 80,
+  sessionSecret: [...Array(128)].map(i => (~~(Math.random() * 36)).toString(36)).join(''),
   key: null,
   cert: null,
   ca: null
@@ -32,11 +33,12 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(session({
-  secret: [...Array(128)].map(i => (~~(Math.random() * 36)).toString(36)).join(''),
+  secret: config.sessionSecret,
   cookie: {
     secure: useSSL,
     httpOnly: !useSSL
   },
+  resave: true,
   saveUninitialized: false,
   store: new MemoryStore({
     checkPeriod: (30 * 60 * 1000) // prune expired entries every 30min
