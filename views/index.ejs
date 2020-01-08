@@ -27,6 +27,8 @@
 			text-align: center;
 			overflow: hidden;
 			margin: 0;
+			border: 0;
+			padding: 0;
 		}
 
 		img {
@@ -48,70 +50,84 @@
 			opacity: 50%;
 		}
 
-		.login-or-out-button {
-			position: absolute !important;
-			top: 0;
-			right: 0;
-			z-index: 999 !important;
-		}
-		.settings-button {
-			text-align: left;
-			position: absolute;
-			top: 0;
+		.modal {
+			display: none;
+			position: fixed;
+			z-index: 9999;
+			padding-top: 100px;
 			left: 0;
-		}
-		.up-button {
-			text-align: center;
-			position: absolute;
 			top: 0;
-			left: 0;
 			width: 100%;
-		}
-
-		.down-button {
-			text-align: center;
-			position: absolute;
-			bottom: 0;
-			left: 0;
-			width: 100%;
-		}
-
-		.left-button {
-			position: absolute;
-			left: 0;
-			top: 0;
 			height: 100%;
+			overflow: auto;
+			background-color: rgb(0, 0, 0);
+			background-color: rgba(0, 0, 0, 0.4);
 		}
 
-		.left-button>img {
+		.modal-content {
+			border-radius: 25px;
+			background-color: #fefefe;
+			margin: auto;
+			padding: 20px;
+			border: 1px solid #888;
+			width: 80%;
+		}
+
+		.close {
+			color: #aaaaaa;
+			float: right;
+			font-size: 28px;
+			font-weight: bold;
+		}
+
+		.close:hover,
+		.close:focus {
+			color: #000;
+			text-decoration: none;
+			cursor: pointer;
+		}
+
+		.container {
 			position: absolute;
-			bottom: 0;
+		}
+
+		.container,
+		.containertable {
+			width: 100%;
+			height: 100%;
+			max-width: 100%;
+			max-height: 100%;
 			top: 0;
+			bottom: 0;
+			right: 0;
 			left: 0;
+			border: 0;
+			margin: 0;
+			padding: 0;
+			border-spacing: 0;
+			border-collapse: collapse;
+		}
+
+		.centered {
+			text-align: center;
+		}
+
+		.halign-right {
+			text-align: right;
+		}
+
+		.halign-left {
+			text-align: left;
+		}
+
+		.centered-vert {
+			top: 0;
+			bottom: 0;
 			margin: auto;
 		}
 
-		.right-button {
-			position: absolute;
-			right: 0;
-			top: 0;
-			height: 100%;
-		}
-
-		.right-button>img {
-			position: absolute;
-			bottom: 0;
-			top: 0;
-			right: 0;
-			margin: auto;
-		}
-
-		.utilities-buttons {
-			position: absolute;
-			bottom: 0;
-			left: 0;
+		td.centered {
 			width: 100%;
-			text-align: left;
 		}
 	</style>
 	<script>
@@ -130,41 +146,84 @@
 </head>
 
 <body>
-	<%if (canAddControl) { %>
-		<div class="settings-button">
-			<img class="shadowed minor-image" src="./img/settings.png" />
-		</div>
-	<% } %>
-	<canvas id="video-canvas" style="max-width: 100vw; max-height: 100vh;"></canvas>
+	<canvas id="video-canvas" style="max-width: 100%; max-height: 100%;"></canvas>
 	<script type="text/javascript" src="./js/jsmpeg.min.js"></script>
-	<%if (loginEnabled){%>
-	<%if (user) { %>
-	<div class="login-or-out-button"><a href="/logout"><img class="shadowed minor-image" src="./img/logout.png" /></a>
+	<div class="container">
+		<table class="containertable">
+			<tr style="vertical-align: top;">
+				<td class="halign-left">
+					<%if (canAddControl) { %>
+					<div id="settings-modal" class="modal">
+						<div class="modal-content">
+							<span onclick="document.getElementById('settings-modal').style.display='none';"
+								class="close">&times;</span>
+							<p>Some text in the Modal..</p>
+						</div>
+					</div>
+					<script>
+						var modal = document.getElementById('settings-modal');
+
+						function showModal() {
+							modal.style.display = 'block';
+						}
+						window.onclick = function (event) {
+							if (event.target == modal) {
+								modal.style.display = "none";
+							}
+						}
+					</script>
+					<img onclick="showModal();" class="shadowed minor-image" src="./img/settings.png" />
+					<% } %>
+				</td>
+				<td class="centered">
+					<%if ((user && canControl) || anonymousControl) { %>
+					<img onclick="move('up');" class="shadowed major-image centered" src="./img/up.png" />
+					<% } %>
+				</td>
+				<td class="halign-right">
+					<%if (loginEnabled){%>
+					<%if (user) { %>
+					<a href="/logout"><img class="shadowed minor-image" src="./img/logout.png" /></a>
+					<% }else{ %>
+					<a href="/login"><img class="shadowed minor-image" src="./img/login.png" /></a>
+					<% } %>
+					<% } %>
+				</td>
+			</tr>
+			<tr style="vertical-align: middle;">
+				<td class="halign-left">
+					<%if ((user && canControl) || anonymousControl) { %>
+					<img onclick="move('left');" class="shadowed major-image" src="./img/left.png" />
+					<% } %>
+				</td>
+				<td class="centered"></td>
+				<td class="halign-right">
+					<%if ((user && canControl) || anonymousControl) { %>
+					<img onclick="move('right');" class="shadowed major-image" src="./img/right.png" />
+					<% } %>
+				</td>
+			</tr>
+			<tr style="vertical-align: bottom;">
+				<td class="halign-left">
+					<%if ((user && canControl) || anonymousControl) { %>
+					<img onclick="move('calibrate');" class="shadowed minor-image" src="./img/calibrate.png" />
+					<% } %>
+				</td>
+				<td class="centered">
+					<%if ((user && canControl) || anonymousControl) { %>
+					<img onclick="move('down');" class="shadowed major-image" src="./img/down.png" />
+					<% } %>
+				</td>
+				<td class="halign-right">
+					<%if ((user && canControl) || anonymousControl) { %>
+					<img onclick="nightmode(false);" class="shadowed minor-image" style="margin: 1.5vmin;"
+						src="./img/night-off.png" />
+					<img onclick="nightmode(true);" class="shadowed minor-image" src="./img/night-on.png" />
+					<% } %>
+				</td>
+			</tr>
+		</table>
 	</div>
-	<% }else{ %>
-	<div class="login-or-out-button"><a href="/login"><img class="shadowed minor-image" src="./img/login.png" /></a>
-	</div>
-	<% } %>
-	<% } %>
-	<%if ((user && canControl) || anonymousControl) { %>
-	<div class="up-button">
-		<img onclick="move('up');" class="shadowed major-image" src="./img/up.png" />
-	</div>
-	<div class="down-button">
-		<img onclick="move('down');" class="shadowed major-image" src="./img/down.png" />
-	</div>
-	<div class="left-button">
-		<img onclick="move('left');" class="shadowed major-image" src="./img/left.png" />
-	</div>
-	<div class="right-button">
-		<img onclick="move('right');" class="shadowed major-image" src="./img/right.png" />
-	</div>
-	<div class="utilities-buttons">
-		<img onclick="move('calibrate');" class="shadowed minor-image" src="./img/calibrate.png" />
-		<img onclick="nightmode(false);" class="shadowed minor-image" style="float:right; margin-left: 3vmin;" src="./img/night-off.png" />
-		<img onclick="nightmode(true);" class="shadowed minor-image" style="float:right;" src="./img/night-on.png" />
-	</div>
-	<% } %>
 	<script type="text/javascript">
 		var canvas = document.getElementById('video-canvas');
 		var url = 'ws<%if (ssl) { %>s<% } %>://' + document.location.host + '/ws';
@@ -172,9 +231,9 @@
 			canvas: canvas
 		});
 		document.body.addEventListener('touchstart', function () {
-			if(player.audioOut.unlocked){
+			if (player.audioOut.unlocked) {
 				player.audioOut.unlocked = false;
-			}else{
+			} else {
 				player.audioOut.unlock();
 			}
 		});
