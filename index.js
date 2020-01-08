@@ -24,7 +24,17 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const request = require('request');
 const getPort = require('get-port');
-var userList = fs.existsSync(__dirname + "/users.json") ? JSON.parse(fs.readFileSync(__dirname + "/users.json").toString()) : {};
+const usersConfigFile = `${__dirname}/users.json`;
+var userList;
+function setLoadAndSetUserList(){
+  userList = fs.existsSync(usersConfigFile) ? JSON.parse(fs.readFileSync(usersConfigFile).toString()) : {};
+}
+setLoadAndSetUserList();
+const chokidar = require('chokidar');
+chokidar.watch(usersConfigFile).on('all', () => {
+  console.log("Reloading users config file...");
+  setLoadAndSetUserList();
+});
 var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -89,7 +99,7 @@ app.get(fbCallback, function (req, res) {
           if (profile && profile.email) {
             if (!Object.keys(userList).includes(profile.email)) {
               userList[profile.email] = false;
-              fs.writeFileSync(__dirname + "/users.json", JSON.stringify(userList, null, "\t"));
+              fs.writeFileSync(usersConfigFile, JSON.stringify(userList, null, "\t"));
             }
             req.session.email = profile.email;
             req.session.save(function () {
