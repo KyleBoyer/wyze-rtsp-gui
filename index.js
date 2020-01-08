@@ -226,7 +226,8 @@ var mainServer;
       '-stats': '', // an option with no neccessary value uses a blank string
       '-r': 30 // options with required values specify the value after the key
     },
-    reconnect: true
+    reconnect: true,
+    reconnectTimeout: 1000
   });
   var streamStopped = false;
   function exitHandler() {
