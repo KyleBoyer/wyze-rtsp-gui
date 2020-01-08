@@ -13,7 +13,7 @@ const config = Object.assign({
   ca: null
 }, fs.existsSync(__dirname + "/config.json") ? JSON.parse(fs.readFileSync(__dirname + "/config.json").toString()) : {});
 const useSSL = (!!config.key && fs.existsSync(config.key) && !!config.cert && fs.existsSync(config.cert));
-const Stream = require('../node-rtsp-stream');
+const Stream = require('node-rtsp-stream');
 var net = require('net');
 var http = require('http');
 var https = require('https');
