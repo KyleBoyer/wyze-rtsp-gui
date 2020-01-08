@@ -15,7 +15,7 @@ This project reads a JSON config file that resides in the same directory as the 
 | `cameraIPorHost` | `"DAFANG"` | Default hostname set by [EliasKotlyar/Xiaomi-Dafang-Hacks](https://github.com/EliasKotlyar/Xiaomi-Dafang-Hacks) used for fetching the RTSP stream and calling controlling commands |
 | `cameraPort` | `8554` | RTSP port to connect to |
 | `serverPort` | `80` | What port to run this Node.JS server on for accepting connections to view/control the camera |
-| `sessionSecret` | Random 512 characters on startup | Recommended to store a secret in config for persistent sessions across restarts |
+| `sessionSecret` | Random 128 characters on startup | Recommended to store a secret in config for persistent sessions across restarts |
 | `key` | `null` | Private key used for securing the server with SSL |
 | `cert` | `null` | Public key used for securing the server with SSL |
 | `ca` | `null` | (Optional) CA Certificates/Chain file used for securing the server with SSL |
