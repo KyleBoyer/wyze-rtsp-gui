@@ -26,7 +26,8 @@ const request = require('request');
 const getPort = require('get-port');
 const usersConfigFile = `${__dirname}/users.json`;
 var userList;
-function setLoadAndSetUserList(){
+
+function setLoadAndSetUserList() {
   userList = fs.existsSync(usersConfigFile) ? JSON.parse(fs.readFileSync(usersConfigFile).toString()) : {};
 }
 setLoadAndSetUserList();
@@ -98,7 +99,10 @@ app.get(fbCallback, function (req, res) {
           }
           if (profile && profile.email) {
             if (!Object.keys(userList).includes(profile.email)) {
-              userList[profile.email] = false;
+              userList[profile.email] = {
+                canControl: false,
+                canAddControl: false
+              };
               fs.writeFileSync(usersConfigFile, JSON.stringify(userList, null, "\t"));
             }
             req.session.email = profile.email;
@@ -126,32 +130,40 @@ function makeIPCameraGETRequest(url) {
     }
   });
 }
+
+function isControlAllowed(req) {
+  return (config.anonymousControl || (req && req.session && req.session.email && userList[req.session.email] && userList[req.session.email].canControl));
+}
+
+function isAddControlAllowed(req) {
+  return (isControlAllowed(req) && req && req.session && req.session.email && userList[req.session.email] && userList[req.session.email].canAddControl);
+}
 app.get('/calibrate', function (req, res) {
-  if (config.anonymousControl || (req && req.session && req.session.email && userList[req.session.email])) {
+  if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=motor_calibrate`);
   }
   res.redirect('/');
 });
 app.get('/left', function (req, res) {
-  if (config.anonymousControl || (req && req.session && req.session.email && userList[req.session.email])) {
+  if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=motor_left&val=100`);
   }
   res.redirect('/');
 });
 app.get('/right', function (req, res) {
-  if (config.anonymousControl || (req && req.session && req.session.email && userList[req.session.email])) {
+  if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=motor_right&val=100`);
   }
   res.redirect('/');
 });
 app.get('/up', function (req, res) {
-  if (config.anonymousControl || (req && req.session && req.session.email && userList[req.session.email])) {
+  if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=motor_up&val=100`);
   }
   res.redirect('/');
 });
 app.get('/down', function (req, res) {
-  if (config.anonymousControl || (req && req.session && req.session.email && userList[req.session.email])) {
+  if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=motor_down&val=100`);
   }
   res.redirect('/');
@@ -159,7 +171,7 @@ app.get('/down', function (req, res) {
 
 app.get('/nightmode', function (req, res) {
   var isOn = ((req && req.query && Object.keys(req.query).includes("on") && req.query.on != null) ? (req.query.on.toLowerCase() == 'true') : true);
-  if (config.anonymousControl || (req && req.session && req.session.email && userList[req.session.email])) {
+  if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=toggle-rtsp-nightvision-${isOn ? 'on' : 'off'}`);
   }
   res.redirect('/');
@@ -175,7 +187,8 @@ app.get('*', function (req, res) {
     anonymousControl: config.anonymousControl,
     loginEnabled: (!!config.fbClientID && !!config.fbClientSecret),
     user: req.session.email,
-    canControl: userList[req.session.email]
+    canControl: canControl(req),
+    canAddControl: canAddControl(req)
   });
 });
 
@@ -214,9 +227,9 @@ var mainServer;
     mainServer.listen(httpsAddress);
     net.createServer(function (conn) {
       conn.on('error', function (err) {
-          if (err.code !== 'ECONNRESET') {
-              throw err;
-          }
+        if (err.code !== 'ECONNRESET') {
+          throw err;
+        }
       });
       conn.once('data', function (buf) {
         // A TLS handshake record starts with byte 22.
