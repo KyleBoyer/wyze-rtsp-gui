@@ -203,6 +203,11 @@ var mainServer;
     mainServer = https.createServer(serverOpts, app);
     mainServer.listen(httpsAddress);
     net.createServer(function (conn) {
+      conn.on('error', function (err) {
+          if (err.code !== 'ECONNRESET') {
+              throw err;
+          }
+      });
       conn.once('data', function (buf) {
         // A TLS handshake record starts with byte 22.
         var address = (buf[0] === 22) ? httpsAddress : redirectAddress;
