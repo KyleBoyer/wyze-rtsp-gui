@@ -13,7 +13,7 @@ const config = Object.assign({
   ca: null
 }, fs.existsSync(__dirname + "/config.json") ? JSON.parse(fs.readFileSync(__dirname + "/config.json").toString()) : {});
 const useSSL = (!!config.key && fs.existsSync(config.key) && !!config.cert && fs.existsSync(config.cert));
-const Stream = require('node-rtsp-stream');
+const Stream = require('../node-rtsp-stream');
 var net = require('net');
 var http = require('http');
 var https = require('https');
@@ -225,6 +225,23 @@ var mainServer;
     ffmpegOptions: { // options ffmpeg flags
       '-stats': '', // an option with no neccessary value uses a blank string
       '-r': 30 // options with required values specify the value after the key
-    }
+    },
+    reconnect: true
   });
+  var streamStopped = false;
+  function exitHandler() {
+    if(!streamStopped){
+      streamStopped = true;
+      console.log("Stopping stream...");
+      stream.stop();
+    }
+    setImmediate(function(){
+      process.exit();
+    });
+  }
+  process.on('close', exitHandler);
+  process.on('SIGINT', exitHandler);
+  process.on('SIGTERM', exitHandler);
+  process.on('SIGUSR1', exitHandler);
+  process.on('SIGUSR2', exitHandler);
 })();
