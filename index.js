@@ -187,8 +187,8 @@ app.get('*', function (req, res) {
     anonymousControl: config.anonymousControl,
     loginEnabled: (!!config.fbClientID && !!config.fbClientSecret),
     user: req.session.email,
-    canControl: canControl(req),
-    canAddControl: canAddControl(req)
+    canControl: isControlAllowed(req),
+    canAddControl: isAddControlAllowed(req)
   });
 });
 
