@@ -54,7 +54,12 @@
 			right: 0;
 			z-index: 999 !important;
 		}
-
+		.settings-button {
+			text-align: left;
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
 		.up-button {
 			text-align: center;
 			position: absolute;
@@ -125,6 +130,11 @@
 </head>
 
 <body>
+	<%if (canAddControl) { %>
+		<div class="settings-button">
+			<img class="shadowed minor-image" src="./img/settings.png" />
+		</div>
+	<% } %>
 	<canvas id="video-canvas" style="max-width: 100vw; max-height: 100vh;"></canvas>
 	<script type="text/javascript" src="./js/jsmpeg.min.js"></script>
 	<%if (loginEnabled){%>
