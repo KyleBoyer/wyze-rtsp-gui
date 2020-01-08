@@ -19,7 +19,7 @@ var http = require('http');
 var https = require('https');
 const express = require('express');
 const session = require("express-session");
-var MemoryStore = require('memorystore')(session)
+var FileStore = require('session-file-store')(session);
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const request = require('request');
@@ -40,8 +40,9 @@ app.use(session({
   },
   resave: true,
   saveUninitialized: false,
-  store: new MemoryStore({
-    checkPeriod: (30 * 60 * 1000) // prune expired entries every 30min
+  store: new FileStore({
+    path: `${__dirname}/sessions`,
+    secret: config.sessionSecret
   })
 }));
 app.use(express.static(__dirname + '/webroot'));
@@ -230,13 +231,14 @@ var mainServer;
     reconnectTimeout: 1000
   });
   var streamStopped = false;
+
   function exitHandler() {
-    if(!streamStopped){
+    if (!streamStopped) {
       streamStopped = true;
       console.log("Stopping stream...");
       stream.stop();
     }
-    setImmediate(function(){
+    setImmediate(function () {
       process.exit();
     });
   }
