@@ -176,29 +176,41 @@
 	<script>
 		function move(direction) {
 			var xhttp = new XMLHttpRequest();
-			xhttp.open("GET", `/${direction}`, true);
+			xhttp.open("GET", `/${direction}`, false);
 			xhttp.send();
 		}
 
 		function nightmode(onOrOffBoolean) {
 			var xhttp = new XMLHttpRequest();
-			xhttp.open("GET", `/nightmode?on=${onOrOffBoolean.toString()}`, true);
+			xhttp.open("GET", `/nightmode?on=${onOrOffBoolean.toString()}`, false);
 			xhttp.send();
 		}
 
+		function refreshUserSettings(){
+			var xhttp = new XMLHttpRequest();
+			xhttp.open("GET", "/usersettings", false);
+			xhttp.send();
+			try{
+				allUsers = JSON.parse(xhttp.responseText);
+			}catch(err){
+				window.location.reload();
+			}
+		}
 		function canadmin(email, onOrOffBoolean) {
 			var xhttp = new XMLHttpRequest();
-			xhttp.open("GET", `/canadmin?on=${onOrOffBoolean.toString()}&email=${encodeURIComponent(email)}`, true);
+			xhttp.open("GET", `/canadmin?on=${onOrOffBoolean.toString()}&email=${encodeURIComponent(email)}`, false);
 			xhttp.send();
+			refreshUserSettings();
 		}
-
 		function cancontrol(email, onOrOffBoolean) {
 			var xhttp = new XMLHttpRequest();
-			xhttp.open("GET", `/cancontrol?on=${onOrOffBoolean.toString()}&email=${encodeURIComponent(email)}`, true);
+			xhttp.open("GET", `/cancontrol?on=${onOrOffBoolean.toString()}&email=${encodeURIComponent(email)}`, false);
 			xhttp.send();
+			refreshUserSettings();
 		}
 
 		function showModal() {
+			refreshUserSettings();
 			document.getElementById('settings-modal').style.display = 'block';
 		}
 

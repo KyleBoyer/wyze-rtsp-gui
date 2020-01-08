@@ -206,6 +206,13 @@ app.get('/cancontrol', function (req, res) {
   res.redirect('/');
 });
 
+app.get('/usersettings', function (req, res) {
+  if (isAdminAllowed(req)) {
+    return res.json(userList);
+  }
+  res.redirect('/');
+});
+
 app.get('/image', function (req, res) {
   makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/currentpic.cgi`).pipe(res);
 });
