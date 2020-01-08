@@ -36,6 +36,49 @@
 			cursor: pointer;
 		}
 
+		input[type=checkbox] {
+			height: 0;
+			width: 0;
+			visibility: hidden;
+		}
+
+		label {
+			cursor: pointer;
+			text-indent: -9999px;
+			width: 100px;
+			height: 50px;
+			background: grey;
+			display: block;
+			border-radius: 50px;
+			position: relative;
+		}
+
+		label:after {
+			content: '';
+			position: absolute;
+			top: 2.5px;
+			left: 2.5px;
+			width: 45px;
+			height: 45px;
+			background: #fff;
+			border-radius: 45px;
+			transition: 0.3s;
+		}
+
+		input:checked+label {
+			background: #bada55;
+		}
+
+		input:checked+label:after {
+			left: calc(100% - 2.5px);
+			transform: translateX(-100%);
+		}
+
+		label:active:after {
+			width: 65px;
+		}
+
+
 		.minor-image {
 			width: 7.5vmax;
 		}
@@ -142,6 +185,34 @@
 			xhttp.open("GET", `/nightmode?on=${onOrOffBoolean.toString()}`, true);
 			xhttp.send();
 		}
+
+		function canadmin(email, onOrOffBoolean) {
+			var xhttp = new XMLHttpRequest();
+			xhttp.open("GET", `/canadmin?on=${onOrOffBoolean.toString()}&email=${encodeURIComponent(email)}`, true);
+			xhttp.send();
+		}
+
+		function cancontrol(email, onOrOffBoolean) {
+			var xhttp = new XMLHttpRequest();
+			xhttp.open("GET", `/cancontrol?on=${onOrOffBoolean.toString()}&email=${encodeURIComponent(email)}`, true);
+			xhttp.send();
+		}
+
+		function showModal() {
+			document.getElementById('settings-modal').style.display = 'block';
+		}
+
+		function hideModal() {
+			document.getElementById('settings-modal').style.display = 'none';
+			document.getElementById('settings-form').reset();
+			document.getElementById("canControl").disabled = true;
+			document.getElementById("canAdmin").disabled = true;
+		}
+		window.onclick = function (event) {
+			if (event.target == document.getElementById('settings-modal')) {
+				hideModal();
+			}
+		}
 	</script>
 </head>
 
@@ -152,24 +223,52 @@
 		<table class="containertable">
 			<tr style="vertical-align: top;">
 				<td class="halign-left">
-					<%if (canAddControl) { %>
+					<%if (canAdmin) { %>
 					<div id="settings-modal" class="modal">
 						<div class="modal-content">
-							<span onclick="document.getElementById('settings-modal').style.display='none';"
-								class="close">&times;</span>
-							<p>Some text in the Modal..</p>
+							<span onclick="hideModal();" class="close">&times;</span></select>
+							<form id="settings-form">
+								Email: <select id="email-select" onchange="emailSelectChanged()">
+									<option disabled selected>--- Select Email ---</option>
+									<%
+									for (const [email, settings] of Object.entries(userList)) {
+										%><option value="<%=email %>"><%=email %></option><%
+									}
+									%>
+								</select><br />
+								Control: <input type="checkbox" disabled onchange="canControlChange()"
+									id="canControl"><label for="canControl">Toggle</label><br />
+								Admin: <input type="checkbox" disabled onchange="canAdminChange()" id="canAdmin"><label
+									for="canAdmin">Toggle</label>
+							</form>
 						</div>
 					</div>
 					<script>
-						var modal = document.getElementById('settings-modal');
+						var allUsers = JSON.parse(atob("<%- Buffer.from(JSON.stringify(userList)).toString('base64') %>"));
 
-						function showModal() {
-							modal.style.display = 'block';
+						var isSettingCurrent = false;
+
+						function emailSelectChanged() {
+							isSettingCurrent = true;
+							var email = document.getElementById("email-select").value;
+							document.getElementById("canControl").checked = allUsers[email].canControl;
+							document.getElementById("canAdmin").checked = allUsers[email].canAdmin;
+							document.getElementById("canControl").disabled = false;
+							document.getElementById("canAdmin").disabled = false;
+							console.log(`Settings for "${email}" have been populated!`);
+							isSettingCurrent = false;
 						}
-						window.onclick = function (event) {
-							if (event.target == modal) {
-								modal.style.display = "none";
-							}
+
+						function canControlChange() {
+							if (isSettingCurrent) return;
+							var email = document.getElementById("email-select").value;
+							cancontrol(email, document.getElementById("canControl").checked)
+						}
+
+						function canAdminChange() {
+							if (isSettingCurrent) return;
+							var email = document.getElementById("email-select").value;
+							canadmin(email, document.getElementById("canAdmin").checked)
 						}
 					</script>
 					<img onclick="showModal();" class="shadowed minor-image" src="./img/settings.png" />

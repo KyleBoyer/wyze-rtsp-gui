@@ -82,6 +82,9 @@ app.get('/logout', function (req, res) {
     res.redirect('/');
   });
 });
+function saveUserList(){
+  fs.writeFileSync(usersConfigFile, JSON.stringify(userList, null, "\t"));
+}
 app.get(fbCallback, function (req, res) {
   if (req && req.query && req.query.code && config.fbClientID && config.fbClientSecret) {
     request.get(`https://graph.facebook.com/v5.0/oauth/access_token?client_id=${config.fbClientID}&redirect_uri=${getCallbackURL(req)}&client_secret=${config.fbClientSecret}&code=${req.query.code}`, {
@@ -101,9 +104,9 @@ app.get(fbCallback, function (req, res) {
             if (!Object.keys(userList).includes(profile.email)) {
               userList[profile.email] = {
                 canControl: false,
-                canAddControl: false
+                canAdmin: false
               };
-              fs.writeFileSync(usersConfigFile, JSON.stringify(userList, null, "\t"));
+              saveUserList();
             }
             req.session.email = profile.email;
             req.session.save(function () {
@@ -135,8 +138,8 @@ function isControlAllowed(req) {
   return (config.anonymousControl || (req && req.session && req.session.email && userList[req.session.email] && userList[req.session.email].canControl));
 }
 
-function isAddControlAllowed(req) {
-  return (isControlAllowed(req) && req && req.session && req.session.email && userList[req.session.email] && userList[req.session.email].canAddControl);
+function isAdminAllowed(req) {
+  return (isControlAllowed(req) && req && req.session && req.session.email && userList[req.session.email] && userList[req.session.email].canAdmin);
 }
 app.get('/calibrate', function (req, res) {
   if (isControlAllowed(req)) {
@@ -177,6 +180,32 @@ app.get('/nightmode', function (req, res) {
   res.redirect('/');
 });
 
+app.get('/canadmin', function (req, res) {
+  if (isAdminAllowed(req)) {
+    var isOn = ((req && req.query && Object.keys(req.query).includes("on") && req.query.on != null) ? (req.query.on.toLowerCase() == 'true') : false);
+    var email = ((req && req.query && Object.keys(req.query).includes("email") && req.query.email != null) ? req.query.email : null);
+    if(email != null && Object.keys(userList).includes(email)){
+      userList[email].canAdmin = isOn;
+      saveUserList();
+      return res.end();
+    }
+  }
+  res.redirect('/');
+});
+
+app.get('/cancontrol', function (req, res) {
+  if (isAdminAllowed(req)) {
+    var isOn = ((req && req.query && Object.keys(req.query).includes("on") && req.query.on != null) ? (req.query.on.toLowerCase() == 'true') : false);
+    var email = ((req && req.query && Object.keys(req.query).includes("email") && req.query.email != null) ? req.query.email : null);
+    if(email != null && Object.keys(userList).includes(email)){
+      userList[email].canControl = isOn;
+      saveUserList();
+      return res.end();
+    }
+  }
+  res.redirect('/');
+});
+
 app.get('/image', function (req, res) {
   makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/currentpic.cgi`).pipe(res);
 });
@@ -188,7 +217,8 @@ app.get('*', function (req, res) {
     loginEnabled: (!!config.fbClientID && !!config.fbClientSecret),
     user: req.session.email,
     canControl: isControlAllowed(req),
-    canAddControl: isAddControlAllowed(req)
+    canAdmin: isAdminAllowed(req),
+    userList
   });
 });
 
