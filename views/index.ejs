@@ -178,30 +178,41 @@
 			var xhttp = new XMLHttpRequest();
 			xhttp.open("GET", `/${direction}`, false);
 			xhttp.send();
+			if (xhttp.status != 200) {
+				window.location.reload();
+			}
 		}
 
 		function nightmode(onOrOffBoolean) {
 			var xhttp = new XMLHttpRequest();
 			xhttp.open("GET", `/nightmode?on=${onOrOffBoolean.toString()}`, false);
 			xhttp.send();
-		}
-
-		function refreshUserSettings(){
-			var xhttp = new XMLHttpRequest();
-			xhttp.open("GET", "/usersettings", false);
-			xhttp.send();
-			try{
-				allUsers = JSON.parse(xhttp.responseText);
-			}catch(err){
+			if (xhttp.status != 200) {
 				window.location.reload();
 			}
 		}
+
+		function refreshUserSettings() {
+			var xhttp = new XMLHttpRequest();
+			xhttp.open("GET", "/usersettings", false);
+			xhttp.send();
+			if (xhttp.status != 200) {
+				window.location.reload();
+			}
+			try {
+				allUsers = JSON.parse(xhttp.responseText);
+			} catch (err) {
+				window.location.reload();
+			}
+		}
+
 		function canadmin(email, onOrOffBoolean) {
 			var xhttp = new XMLHttpRequest();
 			xhttp.open("GET", `/canadmin?on=${onOrOffBoolean.toString()}&email=${encodeURIComponent(email)}`, false);
 			xhttp.send();
 			refreshUserSettings();
 		}
+
 		function cancontrol(email, onOrOffBoolean) {
 			var xhttp = new XMLHttpRequest();
 			xhttp.open("GET", `/cancontrol?on=${onOrOffBoolean.toString()}&email=${encodeURIComponent(email)}`, false);

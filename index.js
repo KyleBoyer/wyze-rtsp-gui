@@ -18,6 +18,7 @@ var net = require('net');
 var http = require('http');
 var https = require('https');
 const express = require('express');
+var cookieSession = require('cookie-session')
 const session = require("express-session");
 var FileStore = require('session-file-store')(session);
 const bodyParser = require("body-parser");
@@ -38,24 +39,15 @@ chokidar.watch(usersConfigFile).on('all', () => {
 var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
-if (useSSL) {
-  app.set('trust proxy', 1); // Fixes sessions not persisting when express-session cookie secure flag is true(aka when using SSL)
-}
+app.set('trust proxy', 1);
 app.use(bodyParser.urlencoded({
   extended: true
 }));
-app.use(session({
+app.use(cookieSession({
+  name: '.wyzegui',
   secret: config.sessionSecret,
-  cookie: {
-    secure: false,
-    httpOnly: !useSSL
-  },
-  resave: false,
-  saveUninitialized: false,
-  store: new FileStore({
-    path: `${__dirname}/sessions`,
-    secret: config.sessionSecret
-  })
+  httpOnly: false,
+  secure: useSSL
 }));
 app.use(express.static(__dirname + '/webroot'));
 const fbCallback = '/callback';
@@ -79,9 +71,8 @@ app.get('/login', function (req, res) {
   }
 });
 app.get('/logout', function (req, res) {
-  req.session.destroy(function () {
-    res.redirect('/');
-  });
+  req.session = null
+  res.redirect('/');
 });
 
 function saveUserList() {
@@ -111,9 +102,8 @@ app.get(fbCallback, function (req, res) {
               saveUserList();
             }
             req.session.email = profile.email;
-            req.session.save(function () {
-              return res.redirect('/');
-            });
+            req.session.save();
+            return res.redirect('/');
           } else {
             return res.redirect('/');
           }
@@ -146,40 +136,46 @@ function isAdminAllowed(req) {
 app.get('/calibrate', function (req, res) {
   if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=motor_calibrate`);
+    return res.status(200).end();
   }
-  res.redirect('/');
+  return res.status(401).end();
 });
 app.get('/left', function (req, res) {
   if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=motor_left&val=100`);
+    return res.status(200).end();
   }
-  res.redirect('/');
+  return res.status(401).end();
 });
 app.get('/right', function (req, res) {
   if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=motor_right&val=100`);
+    return res.status(200).end();
   }
-  res.redirect('/');
+  return res.status(401).end();
 });
 app.get('/up', function (req, res) {
   if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=motor_up&val=100`);
+    return res.status(200).end();
   }
-  res.redirect('/');
+  return res.status(401).end();
 });
 app.get('/down', function (req, res) {
   if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=motor_down&val=100`);
+    return res.status(200).end();
   }
-  res.redirect('/');
+  return res.status(401).end();
 });
 
 app.get('/nightmode', function (req, res) {
   var isOn = ((req && req.query && Object.keys(req.query).includes("on") && req.query.on != null) ? (req.query.on.toLowerCase() == 'true') : true);
   if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=toggle-rtsp-nightvision-${isOn ? 'on' : 'off'}`);
+    return res.status(200).end();
   }
-  res.redirect('/');
+  return res.status(401).end();
 });
 
 app.get('/canadmin', function (req, res) {
@@ -189,10 +185,10 @@ app.get('/canadmin', function (req, res) {
     if (email != null && Object.keys(userList).includes(email)) {
       userList[email].canAdmin = isOn;
       saveUserList();
-      return res.end();
+      return res.status(200).end();
     }
   }
-  res.redirect('/');
+  return res.status(401).end();
 });
 
 app.get('/cancontrol', function (req, res) {
@@ -202,17 +198,17 @@ app.get('/cancontrol', function (req, res) {
     if (email != null && Object.keys(userList).includes(email)) {
       userList[email].canControl = isOn;
       saveUserList();
-      return res.end();
+      return res.status(200).end();
     }
   }
-  res.redirect('/');
+  return res.status(401).end();
 });
 
 app.get('/usersettings', function (req, res) {
   if (isAdminAllowed(req)) {
     return res.json(userList);
   }
-  res.redirect('/');
+  return res.status(401).end();
 });
 
 app.get('/image', function (req, res) {
