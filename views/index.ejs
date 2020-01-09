@@ -231,11 +231,11 @@
 			document.getElementById("canControl").disabled = true;
 			document.getElementById("canAdmin").disabled = true;
 		}
-		window.onclick = function (event) {
+		window.addEventListener(('ontouchend' in window ? 'touchend' : 'click'), function (event) {
 			if (event.target == document.getElementById('settings-modal')) {
 				hideModal();
 			}
-		}
+		});
 	</script>
 </head>
 
