@@ -32,8 +32,21 @@
 		}
 
 		img {
+			-webkit-filter: drop-shadow(0px 0px 10px #FFFFFF);
+			filter: drop-shadow(0px 0px 10px #FFFFFF);
+			opacity: 50%;
 			z-index: 999 !important;
 			cursor: pointer;
+		}
+
+		img:hover {
+			opacity: 100%;
+		}
+
+		img:active {
+			opacity: 50%;
+			-webkit-filter: invert(1) drop-shadow(0px 0px 10px #000000);
+			filter: invert(1) drop-shadow(0px 0px 10px #000000);
 		}
 
 		input[type=checkbox] {
@@ -85,12 +98,6 @@
 
 		.major-image {
 			width: 15vmax;
-		}
-
-		.shadowed {
-			-webkit-filter: drop-shadow(0px 0px 10px #FFFFFF);
-			filter: drop-shadow(0px 0px 10px #FFFFFF);
-			opacity: 50%;
 		}
 
 		.modal {
@@ -374,20 +381,20 @@
 							canadmin(email, document.getElementById("canAdmin").checked)
 						}
 					</script>
-					<img onclick="showModal();" class="shadowed minor-image" src="./img/settings.png" />
+					<img onclick="showModal();" class="minor-image" src="./img/settings.png" />
 					<% } %>
 				</td>
 				<td class="centered">
 					<%if ((user && canControl) || anonymousControl) { %>
-					<img onclick="move('up');" class="shadowed major-image centered" src="./img/up.png" />
+					<img onclick="move('up');" class="major-image centered" src="./img/up.png" />
 					<% } %>
 				</td>
 				<td class="halign-right">
 					<%if (loginEnabled){%>
 					<%if (user) { %>
-					<a href="/logout"><img class="shadowed minor-image" src="./img/logout.png" /></a>
+					<a href="/logout"><img class="minor-image" src="./img/logout.png" /></a>
 					<% }else{ %>
-					<a href="/login"><img class="shadowed minor-image" src="./img/login.png" /></a>
+					<a href="/login"><img class="minor-image" src="./img/login.png" /></a>
 					<% } %>
 					<% } %>
 				</td>
@@ -395,32 +402,32 @@
 			<tr style="vertical-align: middle;">
 				<td class="halign-left">
 					<%if ((user && canControl) || anonymousControl) { %>
-					<img onclick="move('left');" class="shadowed major-image" src="./img/left.png" />
+					<img onclick="move('left');" class="major-image" src="./img/left.png" />
 					<% } %>
 				</td>
 				<td class="centered"></td>
 				<td class="halign-right">
 					<%if ((user && canControl) || anonymousControl) { %>
-					<img onclick="move('right');" class="shadowed major-image" src="./img/right.png" />
+					<img onclick="move('right');" class="major-image" src="./img/right.png" />
 					<% } %>
 				</td>
 			</tr>
 			<tr style="vertical-align: bottom;">
 				<td class="halign-left">
 					<%if ((user && canControl) || anonymousControl) { %>
-					<img onclick="move('calibrate');" class="shadowed minor-image" src="./img/calibrate.png" />
+					<img onclick="move('calibrate');" class="minor-image" src="./img/calibrate.png" />
 					<% } %>
 				</td>
 				<td class="centered">
 					<%if ((user && canControl) || anonymousControl) { %>
-					<img onclick="move('down');" class="shadowed major-image" src="./img/down.png" />
+					<img onclick="move('down');" class="major-image" src="./img/down.png" />
 					<% } %>
 				</td>
 				<td class="halign-right">
 					<%if ((user && canControl) || anonymousControl) { %>
-					<img onclick="nightmode(false);" class="shadowed minor-image" style="margin: 1.5vmin;"
+					<img onclick="nightmode(false);" class="minor-image" style="margin: 1.5vmin;"
 						src="./img/night-off.png" />
-					<img onclick="nightmode(true);" class="shadowed minor-image" src="./img/night-on.png" />
+					<img onclick="nightmode(true);" class="minor-image" src="./img/night-on.png" />
 					<% } %>
 				</td>
 			</tr>
