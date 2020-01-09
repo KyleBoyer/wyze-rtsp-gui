@@ -38,9 +38,6 @@ chokidar.watch(usersConfigFile).on('all', () => {
 var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
-if(useSSL){
-  app.set('trust proxy', 1); // Fixes sessions not persisting when express-session cookie secure flag is true(aka when using SSL)
-}
 app.use(bodyParser.urlencoded({
   extended: true
 }));
@@ -50,7 +47,7 @@ app.use(session({
     secure: useSSL,
     httpOnly: !useSSL
   },
-  resave: true,
+  resave: false,
   saveUninitialized: false,
   store: new FileStore({
     path: `${__dirname}/sessions`,
