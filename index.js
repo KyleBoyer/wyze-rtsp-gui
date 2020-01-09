@@ -38,13 +38,16 @@ chokidar.watch(usersConfigFile).on('all', () => {
 var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
+if (useSSL) {
+  app.set('trust proxy', 1); // Fixes sessions not persisting when express-session cookie secure flag is true(aka when using SSL)
+}
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(session({
   secret: config.sessionSecret,
   cookie: {
-    secure: useSSL,
+    secure: false,
     httpOnly: !useSSL
   },
   resave: false,
@@ -80,7 +83,8 @@ app.get('/logout', function (req, res) {
     res.redirect('/');
   });
 });
-function saveUserList(){
+
+function saveUserList() {
   fs.writeFileSync(usersConfigFile, JSON.stringify(userList, null, "\t"));
 }
 app.get(fbCallback, function (req, res) {
@@ -182,7 +186,7 @@ app.get('/canadmin', function (req, res) {
   if (isAdminAllowed(req)) {
     var isOn = ((req && req.query && Object.keys(req.query).includes("on") && req.query.on != null) ? (req.query.on.toLowerCase() == 'true') : false);
     var email = ((req && req.query && Object.keys(req.query).includes("email") && req.query.email != null) ? req.query.email : null);
-    if(email != null && Object.keys(userList).includes(email)){
+    if (email != null && Object.keys(userList).includes(email)) {
       userList[email].canAdmin = isOn;
       saveUserList();
       return res.end();
@@ -195,7 +199,7 @@ app.get('/cancontrol', function (req, res) {
   if (isAdminAllowed(req)) {
     var isOn = ((req && req.query && Object.keys(req.query).includes("on") && req.query.on != null) ? (req.query.on.toLowerCase() == 'true') : false);
     var email = ((req && req.query && Object.keys(req.query).includes("email") && req.query.email != null) ? req.query.email : null);
-    if(email != null && Object.keys(userList).includes(email)){
+    if (email != null && Object.keys(userList).includes(email)) {
       userList[email].canControl = isOn;
       saveUserList();
       return res.end();
