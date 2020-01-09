@@ -20,7 +20,6 @@ var https = require('https');
 const express = require('express');
 const session = require("express-session");
 var FileStore = require('session-file-store')(session);
-const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const request = require('request');
 const getPort = require('get-port');
@@ -39,7 +38,9 @@ chokidar.watch(usersConfigFile).on('all', () => {
 var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
-app.use(cookieParser());
+if(useSSL){
+  app.set('trust proxy', 1); // Fixes sessions not persisting when express-session cookie secure flag is true(aka when using SSL)
+}
 app.use(bodyParser.urlencoded({
   extended: true
 }));
