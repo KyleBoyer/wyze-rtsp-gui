@@ -277,6 +277,10 @@ var mainServer;
     mainServer = http.createServer(app);
     mainServer.listen(config.serverPort, () => console.info(`Server running on port: ${config.serverPort}`));
   }
+  var ffmpegOptions = Object.assign({ // options ffmpeg flags
+    '-stats': '', // an option with no neccessary value uses a blank string
+    '-r': 30 // options with required values specify the value after the key
+  } ,(config.ffmpegOptions || {})) ;
   const stream = new Stream({
     name: 'name',
     streamUrl: `rtsp://${config.cameraIPorHost}:${config.cameraPort}/unicast`,
@@ -284,10 +288,7 @@ var mainServer;
       server: mainServer,
       path: "/ws"
     },
-    ffmpegOptions: { // options ffmpeg flags
-      '-stats': '', // an option with no neccessary value uses a blank string
-      '-r': 30 // options with required values specify the value after the key
-    },
+    ffmpegOptions,
     reconnect: true,
     reconnectTimeout: 1000
   });
