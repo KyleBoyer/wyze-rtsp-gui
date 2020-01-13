@@ -21,6 +21,9 @@ const express = require('express');
 var cookieSession = require('cookie-session')
 const bodyParser = require("body-parser");
 const request = require('request');
+const {
+  JSDOM
+} = require("jsdom");
 const getPort = require('get-port');
 const usersConfigFile = `${__dirname}/users.json`;
 var userList;
@@ -115,13 +118,24 @@ app.get(fbCallback, function (req, res) {
   }
 });
 
-function makeIPCameraGETRequest(url) {
-  return request.get(url, {
+function makeIPCameraRequest(url, method, form, cb) {
+  return request({
+    url,
+    method,
     rejectUnauthorized: false,
     headers: {
       "Authorization": `Basic ${tranformBasicCredentials(config.cameraCredentials)}`
-    }
-  });
+    },
+    form
+  }, cb);
+}
+
+function makeIPCameraGETRequest(url, cb) {
+  return makeIPCameraRequest(url, 'GET', null, cb);
+}
+
+function makeIPCameraPOSTRequest(url, form, cb) {
+  return makeIPCameraRequest(url, 'POST', form, cb);
 }
 
 function isControlAllowed(req) {
@@ -171,6 +185,56 @@ app.get('/nightmode', function (req, res) {
   var isOn = ((req && req.query && Object.keys(req.query).includes("on") && req.query.on != null) ? (req.query.on.toLowerCase() == 'true') : true);
   if (isControlAllowed(req)) {
     makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=toggle-rtsp-nightvision-${isOn ? 'on' : 'off'}`);
+    return res.status(200).end();
+  }
+  return res.status(401).end();
+});
+
+function objectFromEntries(entries) {
+  var obj = {};
+  for (let [key, value] of entries) {
+    obj[key] = value;
+  }
+  return obj;
+}
+
+function getOSDSettings(cb) {
+  makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/system_osd.cgi`, function (err, _, body) {
+    const dom = new JSDOM(body);
+    const {
+      document,
+      FormData
+    } = dom.window
+    cb(objectFromEntries(new FormData(document.querySelector('form')).entries()));
+  });
+}
+app.get('/date-label', function (req, res) {
+  var isOn = ((req && req.query && Object.keys(req.query).includes("on") && req.query.on != null) ? (req.query.on.toLowerCase() == 'true') : true);
+  if (isControlAllowed(req)) {
+    return getOSDSettings(function (osd) {
+      var newOsd = osd;
+      newOsd['OSDenable'] = isOn ? 'enabled' : '';
+      makeIPCameraPOSTRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=osd`, newOsd).pipe(res);
+    });
+  }
+  return res.status(401).end();
+});
+app.get('/axis-label', function (req, res) {
+  var isOn = ((req && req.query && Object.keys(req.query).includes("on") && req.query.on != null) ? (req.query.on.toLowerCase() == 'true') : true);
+  if (isControlAllowed(req)) {
+    return getOSDSettings(function (osd) {
+      var newOsd = osd;
+      newOsd['AXISenable'] = isOn ? 'enabled' : '';
+      makeIPCameraPOSTRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=osd`, newOsd).pipe(res);
+    });
+  }
+  return res.status(401).end();
+});
+
+app.get('/debug-label', function (req, res) {
+  var isOn = ((req && req.query && Object.keys(req.query).includes("on") && req.query.on != null) ? (req.query.on.toLowerCase() == 'true') : true);
+  if (isControlAllowed(req)) {
+    makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=${isOn ? 'on' : 'off'}Debug`);
     return res.status(200).end();
   }
   return res.status(401).end();
@@ -280,7 +344,7 @@ var mainServer;
   var ffmpegOptions = Object.assign({ // options ffmpeg flags
     '-stats': '', // an option with no neccessary value uses a blank string
     '-r': 30 // options with required values specify the value after the key
-  } ,(config.ffmpegOptions || {})) ;
+  }, (config.ffmpegOptions || {}));
   const stream = new Stream({
     name: 'name',
     streamUrl: `rtsp://${config.cameraIPorHost}:${config.cameraPort}/unicast`,
