@@ -122,11 +122,11 @@ function makeIPCameraRequest(url, method, form, cb) {
   return request({
     url,
     method,
+    form,
     rejectUnauthorized: false,
     headers: {
       "Authorization": `Basic ${tranformBasicCredentials(config.cameraCredentials)}`
-    },
-    form
+    }
   }, cb);
 }
 
@@ -272,9 +272,47 @@ app.get('/usersettings', function (req, res) {
   }
   return res.status(401).end();
 });
-
+function getImage(captionless,res){
+  if(captionless){
+    return getOSDSettings(function (osd) {
+      var newOsd = JSON.parse(JSON.stringify(osd));
+      newOsd['AXISenable'] = '';
+      newOsd['OSDenable'] = '';
+      makeIPCameraPOSTRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=osd`, newOsd, () => {
+        setTimeout(() => {
+          makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/currentpic.cgi`).pipe(res).on('finish', function () {
+            makeIPCameraPOSTRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=osd`, osd);
+          });
+        }, 3000);
+      });
+    });
+  }else{
+    return makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/currentpic.cgi`).pipe(res);
+  }
+}
 app.get('/image', function (req, res) {
-  makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/currentpic.cgi`).pipe(res);
+  if (isControlAllowed(req)) {
+    var captionOn = ((req && req.query && Object.keys(req.query).includes("caption") && req.query.caption != null) ? (req.query.caption.toLowerCase() == 'true') : true);
+    return getImage(!captionOn, res);
+  }
+  return res.status(401).end();
+});
+app.get('/image', function (req, res) {
+  if (isControlAllowed(req)) {
+    return getOSDSettings(function (osd) {
+      var newOsd = JSON.parse(JSON.stringify(osd));
+      newOsd['AXISenable'] = '';
+      newOsd['OSDenable'] = '';
+      makeIPCameraPOSTRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=osd`, newOsd, () => {
+        setTimeout(() => {
+          makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/currentpic.cgi`).pipe(res).on('finish', function () {
+            makeIPCameraPOSTRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=osd`, osd);
+          });
+        }, 3000);
+      });
+    });
+  }
+  return res.status(401).end();
 });
 
 app.get('*', function (req, res) {
