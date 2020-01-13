@@ -291,11 +291,8 @@ function getImage(captionless,res){
   }
 }
 app.get('/image', function (req, res) {
-  if (isControlAllowed(req)) {
-    var captionOn = ((req && req.query && Object.keys(req.query).includes("caption") && req.query.caption != null) ? (req.query.caption.toLowerCase() == 'true') : true);
-    return getImage(!captionOn, res);
-  }
-  return res.status(401).end();
+  var captionOn = ((req && req.query && Object.keys(req.query).includes("caption") && req.query.caption != null) ? (req.query.caption.toLowerCase() == 'true') : true);
+  return getImage(!captionOn, res);
 });
 
 app.get('*', function (req, res) {
