@@ -297,23 +297,6 @@ app.get('/image', function (req, res) {
   }
   return res.status(401).end();
 });
-app.get('/image', function (req, res) {
-  if (isControlAllowed(req)) {
-    return getOSDSettings(function (osd) {
-      var newOsd = JSON.parse(JSON.stringify(osd));
-      newOsd['AXISenable'] = '';
-      newOsd['OSDenable'] = '';
-      makeIPCameraPOSTRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=osd`, newOsd, () => {
-        setTimeout(() => {
-          makeIPCameraGETRequest(`https://${config.cameraIPorHost}/cgi-bin/currentpic.cgi`).pipe(res).on('finish', function () {
-            makeIPCameraPOSTRequest(`https://${config.cameraIPorHost}/cgi-bin/action.cgi?cmd=osd`, osd);
-          });
-        }, 3000);
-      });
-    });
-  }
-  return res.status(401).end();
-});
 
 app.get('*', function (req, res) {
   res.render('index', {
