@@ -372,7 +372,8 @@ var mainServer;
     },
     ffmpegOptions,
     reconnect: true,
-    reconnectTimeout: 1000
+    reconnectTimeout: 1000,
+    reconnectInterval: (24 * 60 * 60 * 1000)
   });
   var streamStopped = false;
 
