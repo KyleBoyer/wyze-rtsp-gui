@@ -190,6 +190,14 @@ app.get('/nightmode', function (req, res) {
   return res.status(401).end();
 });
 
+app.get('/restart', function (req, res) {
+  if (isControlAllowed(req)) {
+    stream.stream.kill();
+    return res.status(200).end();
+  }
+  return res.status(401).end();
+});
+
 function objectFromEntries(entries) {
   var obj = {};
   for (let [key, value] of entries) {
@@ -308,6 +316,8 @@ app.get('*', function (req, res) {
 });
 
 var mainServer;
+var stream;
+
 (async () => {
   var redirectAddress = await getPort();
   var httpsAddress = await getPort();
@@ -363,7 +373,7 @@ var mainServer;
     '-stats': '', // an option with no neccessary value uses a blank string
     '-r': 30 // options with required values specify the value after the key
   }, (config.ffmpegOptions || {}));
-  const stream = new Stream({
+  stream = new Stream({
     name: 'name',
     streamUrl: `rtsp://${config.cameraIPorHost}:${config.cameraPort}/unicast`,
     wsOptions: {
