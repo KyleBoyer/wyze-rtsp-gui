@@ -1,4 +1,6 @@
 var fs = require('fs');
+const myArgs = process.argv.slice(2);
+const configFile = myArgs.length > 0 && fs.existsSync(myArgs[0]) ? JSON.parse(fs.readFileSync(myArgs[0]).toString()) : (fs.existsSync(__dirname + "/config.json") ? JSON.parse(fs.readFileSync(__dirname + "/config.json").toString()) : {});
 const config = Object.assign({
   fbClientID: null,
   fbClientSecret: null,
@@ -11,7 +13,7 @@ const config = Object.assign({
   key: null,
   cert: null,
   ca: null
-}, fs.existsSync(__dirname + "/config.json") ? JSON.parse(fs.readFileSync(__dirname + "/config.json").toString()) : {});
+}, configFile);
 const useSSL = (!!config.key && fs.existsSync(config.key) && !!config.cert && fs.existsSync(config.cert));
 const Stream = require('node-rtsp-stream');
 var net = require('net');
