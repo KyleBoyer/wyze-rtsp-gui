@@ -10,6 +10,7 @@ const config = Object.assign({
   cameraPort: 8554,
   serverPort: 80,
   sessionSecret: [...Array(128)].map(i => (~~(Math.random() * 36)).toString(36)).join(''),
+  rtspEndpoint: 'unicast',
   key: null,
   cert: null,
   ca: null
@@ -377,7 +378,7 @@ var stream;
   }, (config.ffmpegOptions || {}));
   stream = new Stream({
     name: 'name',
-    streamUrl: `rtsp://${config.cameraIPorHost}:${config.cameraPort}/unicast`,
+    streamUrl: `rtsp://${config.cameraCredentials ? `${config.cameraCredentials}@` : ''}${config.cameraIPorHost}:${config.cameraPort}/${config.rtspEndpoint}`,
     wsOptions: {
       server: mainServer,
       path: "/ws"
