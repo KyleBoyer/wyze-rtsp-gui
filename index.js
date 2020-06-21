@@ -11,6 +11,7 @@ const config = Object.assign({
   serverPort: 80,
   sessionSecret: [...Array(128)].map(i => (~~(Math.random() * 36)).toString(36)).join(''),
   rtspEndpoint: 'unicast',
+  pageTitle: undefined,
   key: null,
   cert: null,
   ca: null
@@ -314,7 +315,8 @@ app.get('*', function (req, res) {
     user: req.session.email,
     canControl: isControlAllowed(req),
     canAdmin: isAdminAllowed(req),
-    userList
+    userList,
+    pageTitle: config.pageTitle
   });
 });
 
